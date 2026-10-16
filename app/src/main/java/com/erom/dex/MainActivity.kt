@@ -36,7 +36,7 @@ import androidx.compose.ui.input.key.isAltPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.focus.focusable
+import androidx.compose.foundation.focusable
 
 private val Navy = Color(0xFF08111F)
 private val Panel = Color(0xFF111E30)
@@ -67,7 +67,26 @@ private fun DesktopShell(selectedFolder: String?, onChooseFolder: () -> Unit) {
     var window by remember { mutableStateOf("Desktop") }
     var browserUrl by remember { mutableStateOf("https://www.google.com") }
     val context = LocalContext.current
-    Surface(Modifier.fillMaxSize().focusable().onPreviewKeyEvent { event ->\n        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false\n        when {\n            event.isAltPressed && event.key == Key.One -> { window = "Arquivos"; true }\n            event.isAltPressed && event.key == Key.Two -> { window = "Navegador"; true }\n            event.isAltPressed && event.key == Key.Three -> { window = "Aplicativos"; true }\n            event.isAltPressed && event.key == Key.Four -> { window = "Linux"; true }\n            event.isAltPressed && event.key == Key.Five -> { window = "Configurações"; true }\n            event.isAltPressed && event.key == Key.Six -> { window = "Sobre"; true }\n            event.key == Key.Escape -> { window = "Desktop"; true }\n            else -> false\n        }\n    }, color = Navy) {
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .focusable()
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) {
+                    false
+                } else {
+                    when {
+                        event.isAltPressed && event.key == Key.One -> { window = "Arquivos"; true }
+                        event.isAltPressed && event.key == Key.Two -> { window = "Navegador"; true }
+                        event.isAltPressed && event.key == Key.Three -> { window = "Aplicativos"; true }
+                        event.isAltPressed && event.key == Key.Four -> { window = "Linux"; true }
+                        event.isAltPressed && event.key == Key.Five -> { window = "Configurações"; true }
+                        event.isAltPressed && event.key == Key.Six -> { window = "Sobre"; true }
+                        event.key == Key.Escape -> { window = "Desktop"; true }
+                        else -> false
+                    }
+                }
+            }, color = Navy) {
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().background(Color(0xFF0C1728)).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(34.dp).background(Brush.linearGradient(listOf(Cyan, Color(0xFF4B72FF))), RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
