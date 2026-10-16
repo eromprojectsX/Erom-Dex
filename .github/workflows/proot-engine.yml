@@ -1,0 +1,67 @@
+name: Validate Linux engine for Erom Dex
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/proot-engine.yml"
+    branches: [main]
+
+jobs:
+  build-proot-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Linux engine source
+        uses: actions/checkout@v4
+        with:
+          repository: oonid/pr
+          ref: main
+          submodules: recursive
+          path: linux-engine
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK and NDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018"
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+          components: rustfmt, clippy
+
+      - name: Build patched PRoot for ARM64
+        working-directory: linux-engine
+        run: |
+          sed -i "s|/home/o/Android/Sdk/ndk/[^/]*|$ANDROID_NDK_LATEST_HOME|g" src/pr-cli/.cargo/config.toml
+          sed -i "s|/home/o/Android/Sdk/ndk/[^/]*|$ANDROID_NDK_LATEST_HOME|g" src/proot-integration-test/.cargo/config.toml
+          ./scripts/build.sh --arch=arm64 --ndk-path="$ANDROID_NDK_LATEST_HOME"
+
+      - name: Build Rust CLI
+        working-directory: linux-engine/src/pr-cli
+        run: cargo build --target aarch64-linux-android --release
+
+      - name: Package engine native binaries
+        working-directory: linux-engine
+        run: |
+          mkdir -p android/proot-engine/src/main/jniLibs/arm64-v8a
+          cp build/out/arm64/proot android/proot-engine/src/main/jniLibs/arm64-v8a/libproot.so
+          cp build/out/arm64/loader android/proot-engine/src/main/jniLibs/arm64-v8a/libproot-loader.so
+          cp src/pr-cli/target/aarch64-linux-android/release/pr-cli android/proot-engine/src/main/jniLibs/arm64-v8a/libpr-cli.so
+
+      - name: Build engine library and upstream reference app
+        working-directory: linux-engine/android
+        run: ./gradlew :proot-engine:assembleDebug :app:assembleDebug
+
+      - name: Upload engine AAR for integration work
+        uses: actions/upload-artifact@v4
+        with:
+          name: Erom-Dex-Proot-Engine-ARM64
+          path: linux-engine/android/proot-engine/build/outputs/aar/proot-engine-debug.aar
+          if-no-files-found: error
