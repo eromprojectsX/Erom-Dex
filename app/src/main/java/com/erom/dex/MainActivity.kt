@@ -30,6 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.focus.focusable
 
 private val Navy = Color(0xFF08111F)
 private val Panel = Color(0xFF111E30)
@@ -45,7 +52,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         window.statusBarColor = android.graphics.Color.rgb(8, 17, 31)
         window.navigationBarColor = android.graphics.Color.rgb(8, 17, 31)
         setContent {
@@ -61,7 +67,7 @@ private fun DesktopShell(selectedFolder: String?, onChooseFolder: () -> Unit) {
     var window by remember { mutableStateOf("Desktop") }
     var browserUrl by remember { mutableStateOf("https://www.google.com") }
     val context = LocalContext.current
-    Surface(Modifier.fillMaxSize(), color = Navy) {
+    Surface(Modifier.fillMaxSize().focusable().onPreviewKeyEvent { event ->\n        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false\n        when {\n            event.isAltPressed && event.key == Key.One -> { window = "Arquivos"; true }\n            event.isAltPressed && event.key == Key.Two -> { window = "Navegador"; true }\n            event.isAltPressed && event.key == Key.Three -> { window = "Aplicativos"; true }\n            event.isAltPressed && event.key == Key.Four -> { window = "Linux"; true }\n            event.isAltPressed && event.key == Key.Five -> { window = "Configurações"; true }\n            event.isAltPressed && event.key == Key.Six -> { window = "Sobre"; true }\n            event.key == Key.Escape -> { window = "Desktop"; true }\n            else -> false\n        }\n    }, color = Navy) {
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.fillMaxWidth().background(Color(0xFF0C1728)).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(34.dp).background(Brush.linearGradient(listOf(Cyan, Color(0xFF4B72FF))), RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
@@ -114,7 +120,7 @@ private fun DesktopShell(selectedFolder: String?, onChooseFolder: () -> Unit) {
                                 }
                                 "Aplicativos" -> Text("Atalhos disponíveis: Arquivos, Navegador, Configurações e informações do sistema. Aplicativos Linux exigem o runtime Linux, ainda não integrado.", color = Muted, fontSize = 13.sp, lineHeight = 19.sp)
                                 "Linux" -> Text("O desktop do app já está ativo, mas o runtime Debian ARM64 ainda não está integrado. Por isso, programas Linux nativos ainda não podem ser executados nesta versão.", color = Muted, fontSize = 13.sp, lineHeight = 19.sp)
-                                "Configurações" -> Text("O app está bloqueado em orientação retrato. O Android controla os limites térmicos e de desempenho; o app não pode forçar todos os núcleos à potência máxima.", color = Muted, fontSize = 13.sp, lineHeight = 19.sp)
+                                "Configurações" -> Text("Interface adaptável a retrato e paisagem. Teclado físico: Alt+1 Arquivos, Alt+2 Navegador, Alt+3 Aplicativos, Alt+4 Linux, Alt+5 Sistema, Alt+6 Sobre; Esc volta à área de trabalho. O Android controla a taxa de atualização disponível, o desempenho e os limites térmicos. A meta de 120 Hz depende da tela e do modo ativo; ainda não é uma garantia de 120 FPS.", color = Muted, fontSize = 13.sp, lineHeight = 19.sp)
                                 "Sobre" -> Text("Erom Dex 0.3.0 • interface desktop móvel. Este build é um protótipo funcional de navegação, não uma distribuição Linux completa.", color = Muted, fontSize = 13.sp, lineHeight = 19.sp)
                                 else -> Text("Escolha um atalho acima para abrir uma ferramenta.", color = Muted, fontSize = 13.sp)
                             }
