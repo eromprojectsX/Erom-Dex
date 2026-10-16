@@ -43,6 +43,10 @@ jobs:
           sed -i "s|/home/o/Android/Sdk/ndk/[^/]*|$ANDROID_NDK_LATEST_HOME|g" src/proot-integration-test/.cargo/config.toml
           ./scripts/build.sh --arch=arm64 --ndk-path="$ANDROID_NDK_LATEST_HOME"
 
+      - name: Build PRoot integration-test binary required by pr-cli
+        working-directory: linux-engine/src/proot-integration-test
+        run: cargo build --target aarch64-linux-android --release
+
       - name: Build Rust CLI
         working-directory: linux-engine/src/pr-cli
         run: cargo build --target aarch64-linux-android --release
